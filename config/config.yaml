@@ -1,0 +1,22 @@
+model: {
+  out_dim: 8
+}
+
+env: {
+  device: 'cuda',
+  random_seed: 0
+}
+
+dataset: {
+  label_csv_path: '/home/dw-dengwei/dataset/tissue/train.csv',
+  image_root: '/home/dw-dengwei/dataset/tissue/train/'
+}
+
+exp: {
+  train_batch_size: 1024,
+  valid_batch_size: 256,
+  epoch_num: 500,
+  learning_rate: 5e-5,
+  weight_decay: 8e-2,
+  l1_norm_weight: 0
+}
