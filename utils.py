@@ -16,7 +16,7 @@ def get_ids_and_label_db(label_csv_path: str):
         label_db[idx] = label
         ids.append(idx)
 
-    # ids = ids[:10000] 
+    ids = ids[:10000] 
     return ids, label_db
 
 

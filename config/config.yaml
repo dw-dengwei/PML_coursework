@@ -1,5 +1,6 @@
 model: {
-  out_dim: 8
+  out_dim: 8,
+  num_feature: 64,
 }
 
 env: {
@@ -13,10 +14,10 @@ dataset: {
 }
 
 exp: {
-  train_batch_size: 1024,
+  train_batch_size: 256,
   valid_batch_size: 256,
-  epoch_num: 500,
-  learning_rate: 5e-5,
-  weight_decay: 8e-2,
+  epoch_num: 100,
+  learning_rate: 5e-4,
+  weight_decay: 9e-2,
   l1_norm_weight: 0
 }

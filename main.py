@@ -144,7 +144,6 @@ def main(conf):
     train_ids, valid_ids = split_train_valid(ids)
 
     print("INFO: load data")
-    # ATTENTNION TODO
     dataset_train, dataset_valid = \
         Tissue(train_ids, label_db, conf.dataset.image_root), \
         Tissue(valid_ids, label_db, conf.dataset.image_root)
@@ -160,15 +159,22 @@ def main(conf):
     # model = models.resnet18()
     # hidden_feature_size = model.fc.in_features
     # model.fc = nn.Linear(hidden_feature_size, conf.model.out_dim)
-    model = NephNet2D()
+    model = NephNet2D(conf.model.num_feature)
     # model = ResNet()
 
     model = model.to(conf.env.device)
 
-    optimizer = optim.Adam(
+    # optimizer = optim.Adam(
+    #     model.parameters(),
+    #     lr=conf.exp.learning_rate,
+    #     weight_decay=conf.exp.weight_decay
+    # )
+    optimizer = optim.SGD(
         model.parameters(),
         lr=conf.exp.learning_rate,
-        weight_decay=conf.exp.weight_decay
+        weight_decay=conf.exp.weight_decay,
+        momentum=0.8,
+        nesterov=True
     )
     # apex
     model, optimizer = amp.initialize(model, optimizer, opt_level='O1') 
@@ -190,12 +196,17 @@ def main(conf):
     #     conf.exp.learning_rate * 0.1,
     #     conf.exp.epoch_num
     # )
-    scheduler = lr_scheduler.CosineAnnealingLR(
-                                optimizer, 
-                                10, 
-                                eta_min=0, 
-                                last_epoch=-1, 
-                                verbose=False
+    # scheduler = lr_scheduler.CosineAnnealingLR(
+    #                             optimizer, 
+    #                             10, 
+    #                             eta_min=0, 
+    #                             last_epoch=-1, 
+    #                             verbose=False
+    # )
+    scheduler = lr_scheduler.ReduceLROnPlateau(
+        optimizer,
+        patience=3,
+        factor=0.29
     )
     for epoch in range(conf.exp.epoch_num):
         train_acc, train_loss, logger_visualize = train_epoch(model, 
@@ -209,7 +220,8 @@ def main(conf):
                                          dataloader_valid, 
                                          conf.env.device,
                                          conf)
-        scheduler.step()
+        scheduler.step(valid_loss)
+        # scheduler.step()
         # print('*' * 20)
         print("[Train:{}]\tAcc:{}\tLoss:{}".format(epoch, train_acc, train_loss))
         print("[Valid:{}]\tAcc:{}\tLoss:{}".format(epoch, valid_acc, valid_loss))
@@ -240,7 +252,7 @@ if __name__ == "__main__":
         name='PML:' + time.asctime(),
         config=confDict,
     )
-    random.seed = conf.env.random_seed
-    torch.random.seed = conf.env.random_seed
-    np.random.seed = conf.env.random_seed
+    torch.manual_seed(conf.env.random_seed)
+    np.random.seed(conf.env.random_seed)
+    random.seed(conf.env.random_seed)
     main(conf)
