@@ -16,4 +16,11 @@ Benchmark Collection (BBBC) image sets and each image was revised into 28 x 28 g
 scale images. 
 
 # Poster
-See [here](report/poster.pdf)
+See [here](report/poster.pdf).
+
+# Reference
+[1] A. Woloshuk et al. In situ classification of cell types in human kidney tissue
+using 3dnuclear staining.Cytometry Part A, 99(7):707–721, 2021
+
+[2] Lisha Li∗, Kevin Jamieson∗∗, Giulia DeSalvo†, et al. Hyperband: Bandit-Based
+Configuration Evaluation for Hyperparameter Optimization.
