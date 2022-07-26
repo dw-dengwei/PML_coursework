@@ -1,4 +1,3 @@
-from random import random
 import torchvision.transforms as transforms
 import pandas as pd
 import random
@@ -7,16 +6,22 @@ import cv2
 from PIL import Image
 
 
-def get_ids_and_label_db(label_csv_path: str):
+def get_ids_and_label_db(label_csv_path: str, augment_label_csv_path: str, do_augment: bool):
     label_dataframe = pd.read_csv(label_csv_path)
     label_db = {}
     ids = []
     for index, rows in label_dataframe.iterrows():
         idx, label = rows['Id'], rows['Cell type']
-        label_db[idx] = label
-        ids.append(idx)
+        label_db[str(idx)] = label
+        ids.append(str(idx))
 
-    ids = ids[:10000] 
+    if do_augment:
+        augment_label_dataframe = pd.read_csv(augment_label_csv_path)
+        for index, rows in augment_label_dataframe.iterrows():
+            idx, label = rows['Id'], rows['Cell type']
+            label_db[str(idx)] = label
+            ids.append(str(idx))
+
     return ids, label_db
 
 
@@ -35,9 +40,6 @@ def transform(img_cv) -> torch.Tensor:
             transforms.ToTensor(),
             transforms.Lambda(lambda x: x[0:1, :, :]),
             # transforms.Lambda(lambda x: x.repeat(3, 1, 1)),
-            # transforms.Normalize(
-            # mean=[0.485, 0.456, 0.406],
-            # std=[0.229, 0.224, 0.225])
             # transforms.Lambda(lambda x: (x - 64.92524191326531) / 57.59275746686797)
         ])
     return tf(img_pil) 

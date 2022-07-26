@@ -1,9 +1,5 @@
 from random import random
-from sched import scheduler
 import numpy as np
-from tkinter.ttk import LabeledScale
-from matplotlib.pyplot import step
-from torchvision import models
 from torch.utils.data import DataLoader
 from dataset import Tissue
 from utils import (get_ids_and_label_db, 
@@ -20,8 +16,7 @@ import time
 import argparse
 import random
 import torch.optim.lr_scheduler as lr_scheduler
-import math
-from model import NephNet2D, ResNet
+from model import NephNet2D
 
 
 def train_epoch(model: nn.Module, epoch: int, dataloader: DataLoader, optimizer, device, conf):
@@ -61,7 +56,9 @@ def train_epoch(model: nn.Module, epoch: int, dataloader: DataLoader, optimizer,
         loss += regularization_loss * conf.exp.l1_norm_weight
 
         optimizer.zero_grad()
-        loss.backward()
+        with amp.scale_loss(loss, optimizer) as scaled_loss:
+            scaled_loss.backward()
+        # loss.backward()
         optimizer.step()
 
         _, pred_class = predict.max(1)
@@ -140,13 +137,22 @@ def main(conf):
 
     print("INFO: load label and ids")
     ids, label_db = get_ids_and_label_db(
-        conf.dataset.label_csv_path)
+        conf.dataset.label_csv_path,
+        conf.dataset.augment_label_csv_path,
+        conf.exp.do_augment
+    )
     train_ids, valid_ids = split_train_valid(ids)
 
     print("INFO: load data")
     dataset_train, dataset_valid = \
-        Tissue(train_ids, label_db, conf.dataset.image_root), \
-        Tissue(valid_ids, label_db, conf.dataset.image_root)
+        Tissue(train_ids, 
+               label_db, 
+               conf.dataset.image_root,
+               conf.dataset.augment_image_root), \
+        Tissue(valid_ids, 
+               label_db, 
+               conf.dataset.image_root,
+               conf.dataset.augment_image_root)
     dataloader_train, dataloader_valid = \
         DataLoader(dataset_train, 
                    conf.exp.train_batch_size, 
@@ -205,7 +211,7 @@ def main(conf):
     # )
     scheduler = lr_scheduler.ReduceLROnPlateau(
         optimizer,
-        patience=3,
+        patience=5,
         factor=0.29
     )
     for epoch in range(conf.exp.epoch_num):

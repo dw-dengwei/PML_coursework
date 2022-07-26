@@ -7,7 +7,12 @@ import os.path as path
 
 
 class Tissue(Dataset):
-    def __init__(self, ids: list, label_db: dict, image_root: str) -> None:
+    def __init__(self, 
+                 ids: list, 
+                 label_db: dict, 
+                 image_root: str, 
+                 augment_image_root: str
+        ) -> None:
         '''
         ids: indexes of the training/validating data
         label_db: train.csv file to dict
@@ -22,7 +27,10 @@ class Tissue(Dataset):
         # Using database file is recommended.
         for idx in ids:
             target = label_db[idx]
-            img_cv = cv2.imread(path.join(image_root, str(idx).rjust(6, '0') + ".jpg"))
+            if "QAQ" in idx:
+                img_cv = cv2.imread(path.join(augment_image_root, idx + ".jpg"))
+            else:
+                img_cv = cv2.imread(path.join(image_root, str(idx).rjust(6, '0') + ".jpg"))
             img = transform(img_cv)
             self.label.append(target)
             self.image.append(img)

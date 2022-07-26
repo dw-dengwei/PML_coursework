@@ -1,6 +1,7 @@
 checkpoint/
 log/
 output/
+save/
 .vscode/
 wandb/
 
